@@ -52,11 +52,9 @@ box_name = "ubuntu/bionic64"
 
 base_ip = 100
 base_ip_addresses = "192.168.51"
-# we will create ip address from 192.168.51.100 onward
+
 ip_addresses = (1..number_of_machines).map{ |i| "#{base_ip_addresses}.#{base_ip + i}" }
 
-# provisioning script
-# Add all required setup here
 script = <<-SCRIPT
   echo "hello world"
 SCRIPT
@@ -70,13 +68,17 @@ end
     box.vm.box = box_name
     box.vm.network "private_network", ip: "#{ip_addresses[i-1]}"
 
-    # provion the script
     box.vm.provision "shell", inline: "#{script}"
   end
 end
 
 ```
-
 The configuration of multiple machine is just the extension from the single machine setup. Fundamentally we are just looping the configuration to the number of machine that we want to create. 
 
-In the Vagrantfile fragment above, the only dynamic configuration for each machine is we want to make sure no machine has the same IP address with others. 
+In the Vagrantfile fragment above, the only dynamic configuration for each machine is we want to make sure no machine has the same IP address conflict. The easy way we can just use dhcp. But we want to know the IP for each machine in a static way, hence we generate the IP address by enumerating it based on how many devices we want to create. In this example we will start with starting address of `192.168.58.100`. Since we want to make two boxes, therefore we assign `192.168.58.101` to the first box and `192.168.58.102` to the second box.
+
+## Step 5: Customise the provisioning 
+
+When provisioning the box for the first time, there might be a need to configure some initial setup. Such as installing apps or copying files. Vagrant provide different provisioners such as shell as the simplest to using ansible. In this example we are just echoing "hello world" when the box is provisioned.
+
+Then the last step concludes this post. I am pretty sure will use this post when exploring clustering configuration for some distributed system out there.
